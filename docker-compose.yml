@@ -1,0 +1,38 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/activation
+      DB_USER: activation
+      DB_PASSWORD: ${DB_PASSWORD:-local-development-only}
+      PROVIDER_BASE_URL: http://provider:8080
+    depends_on:
+      db:
+        condition: service_healthy
+      provider:
+        condition: service_started
+    mem_limit: 512m
+    stop_grace_period: 35s
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: activation
+      POSTGRES_USER: activation
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-local-development-only}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U activation -d activation"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  provider:
+    image: wiremock/wiremock:3.13.1
+    ports:
+      - "127.0.0.1:8081:8080"
+    volumes:
+      - ./mock-provider:/home/wiremock:ro
+volumes:
+  postgres-data:

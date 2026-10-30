@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: activation-service
+  datasource:
+    url: ${DB_URL:jdbc:h2:file:./data/activation;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE}
+    username: ${DB_USER:sa}
+    password: ${DB_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+server:
+  shutdown: graceful
+spring.lifecycle.timeout-per-shutdown-phase: 30s
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+provider:
+  base-url: ${PROVIDER_BASE_URL:http://localhost:8081}
+  connect-timeout: ${PROVIDER_CONNECT_TIMEOUT:1s}
+  read-timeout: ${PROVIDER_READ_TIMEOUT:2s}
+worker:
+  enabled: ${WORKER_ENABLED:true}
+  poll-delay: ${WORKER_POLL_DELAY:1000}
+  max-attempts: ${WORKER_MAX_ATTEMPTS:3}
+  lease: ${WORKER_LEASE:30s}
+  backoff: ${WORKER_BACKOFF:2s}
+logging:
+  pattern:
+    level: '%5p [traceId=%X{traceId:-}]'
